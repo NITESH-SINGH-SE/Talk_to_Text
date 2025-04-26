@@ -22,7 +22,7 @@ def system_prompt():
         url=st.secrets["QDRANT_CLOUD_CLUSTER_URL"],
         prefer_grpc=True,
         api_key=st.secrets["QDRANT_API_KEY"],
-        collection_name="my_documents",
+        collection_name="TalkToPDF",
     )
 
     print(f"query: {st.session_state.query}")

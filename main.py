@@ -3,12 +3,14 @@ from openai import OpenAI
 from streamlit_js_eval import streamlit_js_eval
 from system_prompt_generator import system_prompt
 from data_loader import load_data
+from langchain_community.document_loaders import PyPDFLoader
+import PyPDF2
 
 st.set_page_config(layout="wide")
 
-st.markdown("<h1 style='text-align: center;'>Talk to Text</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Talk to PDF</h1>", unsafe_allow_html=True)
 
-text_col, spacer, chat_col = st.columns([5, 1, 5])
+pdf_col, spacer, chat_col = st.columns([5, 1, 5])
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -22,17 +24,29 @@ if "query" not in st.session_state:
     
 
 # Text Section
-with text_col:
-    st.header("📝 Paste or Type Text")
-    with st.form("my_form"):
-        text = st.text_area("Enter text")
-        submitted = st.form_submit_button("Submit", type="primary")
+with pdf_col:
+    st.header("📝 Upload your PDF")
+
+    # PDF Uploader
+    uploaded_pdf = st.file_uploader('', type="pdf")
+    print(uploaded_pdf)
+    if uploaded_pdf is not None:
+        # Read the PDF file
+        pdf_reader = PyPDF2.PdfReader(uploaded_pdf)
+        # Extract the content
+        content = ""
+        for page in range(len(pdf_reader.pages)):
+            content += pdf_reader.pages[page].extract_text()
+        # # Display the content
+        # st.write(content)
+
+    submitted = st.button("Upload", type="primary")
     
     if submitted:
-        with st.spinner("🧠 Processing your text... Please wait"):
-            st.session_state.context = text
+        with st.spinner("🧠 Processing your PDF... Please wait"):
+            st.session_state.context = content
             load_data()
-            st.success("Your text was uploaded successfully. Start chatting!")
+            st.success("Your PDF was uploaded successfully. Start chatting!")
         
 
     reset=st.button("Reset")
@@ -49,16 +63,15 @@ with chat_col:
     st.header("💬 Chat Window")
 
     if st.session_state.context:
-        # st.session_state.messages = [
-        #             {"role": "system", "content": system_prompt()}
-        #         ]
-        # print(system_prompt())
-
         # Set OpenAI API key from Streamlit secrets
         # client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        # client = OpenAI(
+        #     api_key=st.secrets["GOOGLE_API_KEY"],
+        #     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+        # )
         client = OpenAI(
-            api_key=st.secrets["GOOGLE_API_KEY"],
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+            base_url="https://models.github.ai/inference",
+            api_key=st.secrets["GITHUB_TOKEN"],
         )
 
         # Display chat messages from history on app rerun
@@ -66,14 +79,6 @@ with chat_col:
             message = st.session_state.messages[i]
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
-
-        # # Accept user input.
-        # if prompt := st.chat_input("What is up?"):
-        #     # Add user message to chat history
-        #     st.session_state.messages.append({"role": "user", "content": prompt})
-        #     # Display user message in chat message container
-        #     with st.chat_message("user"):
-        #         st.markdown(prompt)
 
         # Accept user input.
         prompt = st.chat_input("What is up?")
@@ -86,11 +91,10 @@ with chat_col:
                     st.markdown(prompt)
 
             # Display assistant response in chat message container
-            # try:
                 with st.chat_message("assistant"):
                     with st.spinner("✍️ Generating response..."):
                         stream = client.chat.completions.create(
-                            model='gemini-2.0-flash',
+                            model="openai/gpt-4.1-mini",
                             messages=[
                                 {"role": "system", "content": system_prompt()},
                                 {"role": "user", "content": st.session_state.query},

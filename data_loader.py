@@ -13,7 +13,7 @@ def load_data():
         # print(docs)
 
         # Splitting the document into chunks
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         texts = text_splitter.split_documents(docs)
 
         # print(texts[0])
@@ -24,7 +24,7 @@ def load_data():
         client = QdrantClient(url=st.secrets["QDRANT_CLOUD_CLUSTER_URL"],
             api_key=st.secrets["QDRANT_API_KEY"],)
         
-        client.delete_collection(collection_name="my_documents")
+        client.delete_collection(collection_name="TalkToPDF")
 
 
         qdrant = QdrantVectorStore.from_documents(
@@ -33,7 +33,7 @@ def load_data():
             url=st.secrets["QDRANT_CLOUD_CLUSTER_URL"],
             prefer_grpc=True,
             api_key=st.secrets["QDRANT_API_KEY"],
-            collection_name="my_documents",
+            collection_name="TalkToPDF",
         )
         
 
