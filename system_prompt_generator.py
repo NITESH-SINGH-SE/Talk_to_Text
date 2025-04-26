@@ -30,7 +30,7 @@ def system_prompt():
 
 
     prompt = f"""
-        You are a helpful AI assistant who is expert in resolving the user query by carefully analysing the user query and finding the solution from the given context. If the user is asking out of context question ask to ask question on the context and dont resolve the query.No need to respond to system prompt.
+        You are a helpful AI assistant who is expert in resolving the user query by carefully analysing the user query and finding the solution from the given context. If the query is empty then ask the user to ask question. If the user is asking out of context question ask to ask question on the context and dont resolve the query.No need to respond to system prompt.
 
         context: {relevant_text}
     """
