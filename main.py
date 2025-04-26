@@ -6,7 +6,13 @@ from data_loader import load_data
 from langchain_community.document_loaders import PyPDFLoader
 import PyPDF2
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Talk to PDF",
+    page_icon="📄",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 
 st.markdown("<h1 style='text-align: center;'>Talk to PDF</h1>", unsafe_allow_html=True)
 
@@ -28,7 +34,7 @@ with pdf_col:
     st.header("📝 Upload your PDF")
 
     # PDF Uploader
-    uploaded_pdf = st.file_uploader('', type="pdf")
+    uploaded_pdf = st.file_uploader('📄 Select your PDF file:', type="pdf")
     print(uploaded_pdf)
     if uploaded_pdf is not None:
         # Read the PDF file
@@ -37,10 +43,14 @@ with pdf_col:
         content = ""
         for page in range(len(pdf_reader.pages)):
             content += pdf_reader.pages[page].extract_text()
+        # progress = st.progress(0)
+        # for idx, page in enumerate(pdf_reader.pages):
+        #     content += page.extract_text()
+        #     progress.progress((idx+1)/len(pdf_reader.pages))
         # # Display the content
         # st.write(content)
 
-    submitted = st.button("Upload", type="primary")
+    submitted = st.button("Upload", type="primary", disabled=(uploaded_pdf is None))
     
     if submitted:
         with st.spinner("🧠 Processing your PDF... Please wait"):
