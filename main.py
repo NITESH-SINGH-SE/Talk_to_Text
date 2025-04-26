@@ -6,6 +6,7 @@ from data_loader import load_data
 from langchain_community.document_loaders import PyPDFLoader
 import PyPDF2
 
+# Set page settings
 st.set_page_config(
     page_title="Talk to PDF",
     page_icon="📄",
@@ -13,10 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-
 st.markdown("<h1 style='text-align: center;'>Talk to PDF</h1>", unsafe_allow_html=True)
-
-pdf_col, spacer, chat_col = st.columns([5, 1, 5])
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -27,39 +25,38 @@ if "context" not in st.session_state:
 
 if "query" not in st.session_state:
     st.session_state.query = ""
-    
 
-# Text Section
+# Layout
+pdf_col, spacer, chat_col = st.columns([5, 1, 5])
+    
+# Upload Section
 with pdf_col:
     st.header("📝 Upload your PDF")
 
     # PDF Uploader
-    uploaded_pdf = st.file_uploader('📄 Select your PDF file:', type="pdf")
-    print(uploaded_pdf)
-    if uploaded_pdf is not None:
-        # Read the PDF file
-        pdf_reader = PyPDF2.PdfReader(uploaded_pdf)
-        # Extract the content
-        content = ""
-        for page in range(len(pdf_reader.pages)):
-            content += pdf_reader.pages[page].extract_text()
-        # progress = st.progress(0)
-        # for idx, page in enumerate(pdf_reader.pages):
-        #     content += page.extract_text()
-        #     progress.progress((idx+1)/len(pdf_reader.pages))
-        # # Display the content
-        # st.write(content)
+    uploaded_pdf = st.file_uploader("Choose a PDF ...", type="pdf")
 
-    submitted = st.button("Upload", type="primary", disabled=(uploaded_pdf is None))
+    submitted = st.button("🚀 Upload and Process", type="primary", disabled=(uploaded_pdf is None))
     
-    if submitted:
+    if submitted and uploaded_pdf:
         with st.spinner("🧠 Processing your PDF... Please wait"):
+            pdf_reader = PyPDF2.PdfReader(uploaded_pdf)
+            content = ""
+            progress_bar = st.progress(0)
+
+            for idx, page in enumerate(pdf_reader.pages):
+                content += page.extract_text()
+                progress_bar.progress((idx + 1) / len(pdf_reader.pages))
+
             st.session_state.context = content
+
             load_data()
-            st.success("Your PDF was uploaded successfully. Start chatting!")
+            # st.success("Your PDF was uploaded successfully. Start chatting!")
+            st.success("✅ Your PDF is ready! Start chatting on the right ➡️")
+            progress_bar.empty()
         
 
-    reset=st.button("Reset")
+    reset=st.button("🔄 Reset")
     if reset:
         st.session_state.vector_store = None
         st.session_state.messages = []
